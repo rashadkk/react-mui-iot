@@ -20,6 +20,17 @@ class RegistryService {
         const url = `/registry/projects/${project}/locations/${region}/registries`;
         return api.post(url, params)
     }
+
+    editRedistry = (registryId: string, params: any) => {
+        const region = params?.region;
+        const url = `/registry/projects/${project}/locations/${region}/registries/${registryId}`;
+        return api.patch(url, params)
+    }
+
+    deleteRegistry = (registryId: string, region: string) => {
+        const url = `/registry/projects/${project}/locations/${region}/registries/${registryId}`;
+        return api.delete(url);
+    }
 }
 
 export default new RegistryService();

@@ -1,4 +1,5 @@
-import { Box } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
+import { Box, IconButton, Toolbar, Typography } from "@mui/material";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Sidebar from '../../components/sidebar/sidebar'
 import NewDeviceForm from "./new-device-form";
@@ -19,7 +20,13 @@ const NewDevice = () => {
   return (
     <Box sx={{ display: 'flex' }}>
         <Sidebar registry={registryId} region={region} />
-        <Box className="flex-grow-1 p-3">
+        <Box className="flex-grow-1">
+            <Toolbar sx={{ borderBottom: '1px solid #cdcdcd' }}>
+            <IconButton sx={{ marginRight: '1.5rem' }} color="inherit" onClick={() => navigate(-1)}>
+              <ArrowBack color="primary" />
+            </IconButton>
+            <Typography variant="h5" fontWeight={500} component="h1">Create a device</Typography>
+          </Toolbar>
           <NewDeviceForm region={region} registry={registryId} />
         </Box>
     </Box>

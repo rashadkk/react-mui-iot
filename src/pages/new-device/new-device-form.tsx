@@ -67,7 +67,7 @@ function NewDeviceForm(props: Props) {
         try {
             if(registry && region) {
                 await deviceService.createDevice(registry, region, params)
-
+                navigate(`/registries/${registry}/devices?region=${region}`)
             }
         } catch (error) {
             console.log('Device create error', error);
@@ -82,33 +82,33 @@ function NewDeviceForm(props: Props) {
         if (validate()){
 
             const projectId = 'famous-palisade-356103';
+            const cred: Array<any> = [];
+
             const params = {
                 id: values?.id,
                 name:`project/${projectId}/locations/${region}/registries/${registry}/devices/${values?.id}`,
-                credentials:[
-                    {
-                    expirationTime: "2023-10-02T15:01:23.045123456Z", // TODO
-                    publicKey: {
-                        "format": "RSA_X509_PEM",
-                        "key": "-----BEGIN CERTIFICATE-----\nMIIDTjCCAjagAwIBAgIUT1pnW729WKi7u7WsOZi9uBbPfWIwDQYJKoZIhvcNAQEL\nBQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM\nGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yMjA3MjAwNjM2NDBaFw0zMjA3\nMTcwNjM2NDBaMF8xCzAJBgNVBAYTAkNOMREwDwYDVQQIDAhaaGVqaWFuZzERMA8G\nA1UEBwwISGFuZ3pob3UxDTALBgNVBAoMBEVNUVgxGzAZBgNVBAMMElNlcnZlciBj\nZXJ0aWZpY2F0ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMCW4X3v\nCvwIxGFHXaUTMyHGl9vKR4p2jv+UyWm6MOVzBB8JH8OO5nWVQr8GRGMtQQHmxcLm\nfPS4YQ1KBBnyVAxrI9nqf9HWstKXTtZHCKUjFWUd5ewpM8RnByezU/P628l9FxtW\nZEk3G5tDjxXdPtSRxbd38sX4WBkNftJKXGseGXIG4MszuqQdmfCLqehLRSXZy3SF\nBS+qU1g/8n913cU8KD65Uq2dq1/cafxZ1y3WK30Gq15hyaKbaiZefuMhepF5sTWa\nPs74++SfhjKNN/d7EVEhV3UpOCTUxrwu0+AmUA0EL+RjXVNX4bTiSh9bKZxz+HaG\nC6IQNWlkZTLHawMCAwEAAaMcMBowGAYDVR0RBBEwD4cEAAAAAIIHMC4wLjAuMDAN\nBgkqhkiG9w0BAQsFAAOCAQEAJfI/NR/tQHN0hXdFSsBQ66L9/WhX/AsVrZ4//Yrl\njeJQ8BXuJP/z+0GmDTgGdFlVrgkB5SEx1nLrJXqF0032KpawxpNG8e9QD9rUP4ll\nPg43YJi6XSsNJ9Oo/UU2/FpYMBLzxlKgXPvuu83PYFykpqxqxSCw5sy4XDwTq9qx\nlUIXgasIwZgonyKQuK+QEejqM5aunGEOKye1rImouRmnOoH6taCyyjnF5faLY5Ux\nMBluKqF5oi2rawSuzNi9ywFgB6EXKZE25zx3gjyFBY+dHgAxDrKrSgT6ZSt1aveN\nc8PNT5d23RTkXNGFzIljLCs45Ts4vxuNYSIdJORCkcce1w==\n-----END CERTIFICATE-----"
-                    }
-                    }
-            
-                ],
-                "blocked":false,
-                "metadata":{},
-                "loglevel":"INFO"
-                
-                
+                credentials: cred,
+                blocked: values?.deviceCommunication !== 'ALLOW',
+                metadata:{},
+                loglevel:values?.logLevel
             }
+            if(values?.certValue) {
+                params.credentials.push({
+                    expirationTime: "", // TODO
+                    publicKey: {
+                        format: values?.publicKeyFormat,
+                        key: values?.certValue || ''
+                    }
+                })
+            }
+            createDevice(params);
         }
     }
 
   return (
-    <Form className="p-4">
+    <Form className="p-4" onSubmit={submitHandler}>
        <Grid container>
             <Grid container item sm={12} md={8} xl={6} gap={5}>
-                <Typography variant="h5" component="h2">Registry properties</Typography>
                 <Grid item sm={12}>
                     <Controls.Input
                         name="id"
@@ -167,6 +167,7 @@ function NewDeviceForm(props: Props) {
 							name="certValue"
 							onChange={handleInputChange}
 							multiline
+                            value={values?.certValue}
 							rows={6}
                             className="mt-4"
 							placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}

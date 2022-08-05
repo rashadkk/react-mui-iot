@@ -7,10 +7,6 @@ import { Add } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import deviceService from '../../services/device.service';
 
-const devices = [
-    {id: 'test1', deviceId: 'Thermometer', communication: '', lastSeen: '', cloudLoging: 'Registry Default'}
-]
-
 const Devices = () => {
 
     const routerParams = useParams();
@@ -27,7 +23,7 @@ const Devices = () => {
             if(registryId && region) {
                 const resp = await deviceService.getDevices(registryId, region);
                 console.log('resp', resp.data);
-                setDevices(resp.data?.deviceRegistries)
+                setDevices(resp.data?.details?.devices)
             }
         } catch (error) {
             console.log('eee=> ', error);
@@ -41,27 +37,26 @@ const Devices = () => {
   return (
     <Box sx={{ display: 'flex' }}>
         <Sidebar registry={registryId} region={region} />
-        <Box className="flex-grow-1">
-            
+        <Box className="flex-grow-1"> 
             <Toolbar sx={{ backgroundColor: '#f7f5f5', borderBottom: '1px solid #cdcdcd', marginBottom: '1.5rem' }}>
                 <Typography variant="h5" component="h1">Devices</Typography>
-                <Button sx={{ marginLeft: '3rem' }} onClick={() => navigate('new')}>
+                <Button sx={{ marginLeft: '3rem' }} onClick={() => navigate(`new?region=${region}`)}>
                     <Add />
                      Create Device
                 </Button>
             </Toolbar>
 
             <Box>
-                <Box sx={{padding: '1rem'}}>
+                <Box sx={{padding: '1.5rem'}}>
                     <Typography className="mb-4" variant="h5" component="h1">Registry ID: {registryId}</Typography>
                     <Typography variant="body2">{region}</Typography>
                 </Box>
                 <Divider />
             </Box>
 
-            <TableContainer sx={{margin: '1rem'}} component={Paper}>
+            <TableContainer sx={{margin: '1.5rem'}} >
             <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-                <TableHead>
+                <TableHead sx={{ backgroundColor: '#fafafa' }}>
                 <TableRow>
                     <TableCell>Device ID</TableCell>
                     <TableCell>Communication</TableCell>
@@ -76,7 +71,7 @@ const Devices = () => {
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                         <TableCell component="th" scope="row">
-                            <Link to={`${row?.id}/devices/${row.deviceId}`}>{row?.deviceId}</Link>
+                            <Link to={`${row?.id}/devices/${row.id}`}>{row?.id}</Link>
                         </TableCell>
                         <TableCell>{'-'}</TableCell>
                         <TableCell>{''}</TableCell>

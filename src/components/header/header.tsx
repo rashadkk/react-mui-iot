@@ -1,16 +1,16 @@
-import { AppBar, IconButton, Toolbar, Typography } from "@mui/material";
-import MenuIcon from '@mui/icons-material/Menu'
+import { AppBar, Button, IconButton, Toolbar, Typography } from "@mui/material";
+import MenuIcon from '@mui/icons-material/Menu';
+import { useKeycloak } from "@react-keycloak/web";
+
 
 const Header = () => {
+  const { keycloak, } = useKeycloak();
+  
+  const baseUrl = 'http://localhost:3000/registries'
+
+  console.log('token', keycloak.token)
+
   return (
-  //   <header className="p-3 bg-dark text-white">
-  //     <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-  //       <a href="/" className="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
-  //         {/* <svg className="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap"><use xlink:href="#bootstrap"/></svg> */}
-  //         IoT Core
-  //       </a>
-  //     </div>
-  // </header>
   <AppBar position="static">
     <Toolbar>
         <IconButton color="inherit">
@@ -19,6 +19,20 @@ const Header = () => {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1, marginLeft: '1.5rem' }}>
           KORE
         </Typography>
+        {
+          !keycloak.authenticated && (
+            <Button color="inherit" onClick={() => keycloak.login({
+              redirectUri: baseUrl
+            })}>Login</Button>
+          )
+        }
+        {
+          !!keycloak.authenticated && (
+            <Button color="inherit" onClick={() => keycloak.logout()}>
+              Logout ({keycloak?.tokenParsed?.preferred_username})
+            </Button>
+          )
+        }
     </Toolbar>
   </AppBar>
   )

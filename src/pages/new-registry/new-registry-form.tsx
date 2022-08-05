@@ -35,7 +35,12 @@ const cloudLoggingOptions = [
 
 const filter = createFilterOptions<any>();
 
-const NewRegistryForm = () => {
+interface Props {
+	editMode?: boolean
+  }
+
+const NewRegistryForm = (props: Props) => {
+	const { editMode } = props;
 
 	const validate = (fieldValues = values) => {
 		let temp = { ...errors }

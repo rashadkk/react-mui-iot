@@ -7,11 +7,6 @@ import registryService from '../../services/registry.service';
 
 import { AddBox } from '@mui/icons-material';
 
-// const registries = [
-//     { id: 'test1', region: 'asia-east-1', protocols: ['MQTT', 'HTTP'], topics: ['project/my-iot/Temperature1'] },
-//     { id: 'test-registry1', region: 'asia-east-1', protocols: ['MQTT', 'HTTP'], topics: ['project/my-iot/Temperature'] },
-//     { id: 'test123', region: 'asia-east-1', protocols: ['MQTT', 'HTTP'], topics: ['project/my-iot/Temp'] },
-// ]
 
 const Registries = () => {
 
@@ -23,7 +18,7 @@ const Registries = () => {
         try {
             const resp = await registryService.getRegistries();
             console.log('resp', resp.data);
-            setRegistries(resp.data?.deviceRegistries)
+            setRegistries(resp.data?.details?.deviceRegistries)
         } catch (error) {
             console.log('eee=> ', error);
         }
@@ -42,10 +37,10 @@ const Registries = () => {
                 Create Registry
             </Button>
         </Toolbar>
-        
+
         <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-            <TableHead>
+            <TableHead sx={{ backgroundColor: '#fafafa' }}>
             <TableRow>
                 <TableCell>Registry ID</TableCell>
                 <TableCell>Region</TableCell>

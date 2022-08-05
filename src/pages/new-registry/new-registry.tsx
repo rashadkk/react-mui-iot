@@ -5,14 +5,15 @@ import { ArrowBack } from '@mui/icons-material';
 // import Button from "../../components/controls/Button";
 import NewRegistryForm from "./new-registry-form";
 
-const NewRegistry = () => {
+interface Props {
+  editMode?: boolean
+}
+
+const NewRegistry = (props: Props) => {
+
+  const { editMode } = props;
 
   const navigate = useNavigate();
-
-  const onSubmit = (values: any) => {
-    console.log('values after validation', values);
-    
-  } 
 
   return (
     <>
@@ -20,7 +21,7 @@ const NewRegistry = () => {
         <IconButton sx={{ marginRight: '1.5rem' }} color="inherit" onClick={() => navigate(-1)}>
           <ArrowBack color="primary" />
         </IconButton>
-        <Typography variant="h5" fontWeight={500} component="h1">Create Registry</Typography>
+        <Typography variant="h5" fontWeight={500} component="h1">{ editMode? 'Edit Registry' : 'Create Registry'}</Typography>
       </Toolbar>
       <NewRegistryForm />
     </>
