@@ -1,39 +1,24 @@
 import { Form, useForm } from '../../components/useForm';
 import Controls from '../../components/controls/Controls'
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import { Button, Grid, Typography } from '@mui/material';
 import deviceService from '../../services/device.service';
-import { FormEvent } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const cloudLoggingOptions = [
-    { id: "DISABLED", title: 'Disabled' },
-    { id: "ERROR", title: 'Error' },
-    { id: "INFO", title: 'Info' },
-    { id: "DEBUG", title: 'Debug' },
-]
-
-const publicKeyFormat = [
-    { id: 'RSA_PEM', title: 'RS256' },
-    { id: 'ES256_PEM', title: 'ES256' },
-    { id: 'RSA_X509_PEM', title: 'RS256_X509' },
-    { id: 'ES256_X509_PEM', title: 'ES256_X509' },
-]
-
-const initialFormValues = {
-    deviceCommunication: 'ALLOW',
-    logLevel: 'DISABLED',
-    inputMethod: 'MANUAL',
-    publicKeyFormat: 'RSA_X509_PEM'
-}
+import { cloudLoggingOptions, publicKeyFormat } from '../../global/constants';
 
 interface Props {
 	region: string | undefined | null,
-	registry: string | undefined 
+	registry: string | undefined,
+    deviceId?: string,
+    editMode?: boolean
 }
 
 function NewDeviceForm(props: Props) {
 
-    const { region, registry } = props;
+    const { region, registry, editMode, deviceId } = props;
+
+    // const [deviceDetails, setDeviceDetails] = useState<any>({});
 
     const validate = (fieldValues = values) => {
         let temp = { ...errors }
@@ -57,9 +42,10 @@ function NewDeviceForm(props: Props) {
         values,
         errors,
         setErrors,
+        setValues,
         handleInputChange,
-        resetForm
-    } = useForm(initialFormValues, true, validate);
+        // resetForm
+    } = useForm({}, true, validate);
 
     console.log('values', values)
 
@@ -74,6 +60,48 @@ function NewDeviceForm(props: Props) {
             
         }
     }
+
+    const updateDevice = async (params: any) => {
+        try {
+            if(deviceId && registry && region) {
+                await deviceService.editDevice(deviceId, registry, region, params);
+                navigate(`/registries/${registry}/devices/${deviceId}/overview?region=${region}`)
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const getDevice = async () => {
+        try {
+            if(deviceId && registry && region) {
+                const resp = await deviceService.getDevice(deviceId, registry, region);
+                const deviceDetails = resp.data?.details;
+                // setDeviceDetails(deviceDetails)
+                setValues({
+                    id: deviceId,
+                    logLevel: deviceDetails?.logLevel,
+                    deviceCommunication: deviceDetails?.blocked ? 'BLOCK' : 'ALLOW'
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        if(editMode) {
+            getDevice()
+        }else{
+            const initialFormValues = {
+                deviceCommunication: 'ALLOW',
+                logLevel: 'DISABLED',
+                inputMethod: 'MANUAL',
+                publicKeyFormat: 'RSA_X509_PEM'
+            }
+            setValues(initialFormValues)
+        }
+    }, [])
 
     const navigate = useNavigate();
 
@@ -101,7 +129,11 @@ function NewDeviceForm(props: Props) {
                     }
                 })
             }
-            createDevice(params);
+            if(!editMode) {
+                createDevice(params);
+                return;
+            }
+            updateDevice(params);
         }
     }
 
@@ -117,65 +149,72 @@ function NewDeviceForm(props: Props) {
                         onChange={handleInputChange}
                         required
                         fullWidth
+                        disabled={editMode}
                     />
                 </Grid>
-                <Typography variant="h5" component="h2">Device communication</Typography>
                 <Grid item sm={12}>
+                    <Typography variant="h6" marginBottom={2} fontWeight={500} component="h2">Device communication</Typography>
                     <Controls.RadioGroup
                         name="deviceCommunication"
                         items={[
                             {id: 'ALLOW', title: 'Allow' },
                             {id: 'BLOCK', title: 'Block' },
                         ]}
-                        value={values?.deviceCommunication}
+                        value={values?.deviceCommunication || ''}
                         onChange={handleInputChange}
                     />
                 </Grid>
-                <Typography variant="h5" component="h2">Cloud Logging</Typography>
                 <Grid item sm={12}>
+                    <Typography variant="h6" marginBottom={2} fontWeight={500} component="h2">Cloud Logging</Typography>
                    <Controls.RadioGroup
                         name="logLevel"
-                        value={values?.logLevel}
+                        value={values?.logLevel || ''}
                         onChange={handleInputChange}
                         items={cloudLoggingOptions}
                    />
                 </Grid>
-                <Typography variant="h5" component="h2">Authentication (optional)</Typography>
-                <Grid item sm={12}>
-                   <Controls.RadioGroup
-                        name="inputMethod"
-                        value={values?.inputMethod}
-                        className=""
-                        onChange={handleInputChange}
-                        items={[
-                            { id: 'MANUAL', title: 'Enter manually' },
-                            { id: 'UPLOAD', title: 'Upload', disabled: true },
-                        ]}
-                   />
-                   <Controls.Select
-                        name="publicKeyFormat"
-                        options={publicKeyFormat}
-                        value={values?.publicKeyFormat}
-                        label="Public key format"
-                        onChange={handleInputChange}
-                   />
-                    {
-                        values?.inputMethod === 'MANUAL' &&
-                        <Controls.Input
-							fullWidth
-							label="Certificate value"
-							name="certValue"
-							onChange={handleInputChange}
-							multiline
-                            value={values?.certValue}
-							rows={6}
-                            className="mt-4"
-							placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}
-						/>
-                    }
-                </Grid>
+                {
+                    !editMode && (
+                        <>         
+                            <Grid item sm={12}>
+                            <Typography variant="h6" marginBottom={2} fontWeight={500} component="h2">Authentication (optional)</Typography>
+                            <Controls.RadioGroup
+                                    name="inputMethod"
+                                    value={values?.inputMethod || ''}
+                                    className=""
+                                    onChange={handleInputChange}
+                                    items={[
+                                        { id: 'MANUAL', title: 'Enter manually' },
+                                        { id: 'UPLOAD', title: 'Upload', disabled: true },
+                                    ]}
+                            />
+                            <Controls.Select
+                                    name="publicKeyFormat"
+                                    options={publicKeyFormat}
+                                    value={values?.publicKeyFormat || ''}
+                                    label="Public key format"
+                                    onChange={handleInputChange}
+                            />
+                                {
+                                    values?.inputMethod === 'MANUAL' &&
+                                    <Controls.Input
+                                        fullWidth
+                                        label="Certificate value"
+                                        name="certValue"
+                                        onChange={handleInputChange}
+                                        multiline
+                                        value={values?.certValue}
+                                        rows={6}
+                                        className="mt-4"
+                                        placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}
+                                    />
+                                }
+                            </Grid>
+                        </>
+                    )
+                }
                 <div className="d-flex" >
-                    <Button variant="contained" type="submit">Create</Button>
+                    <Button variant="contained" type="submit">{editMode ? 'Update' : 'Create'}</Button>
                     <Button onClick={() => navigate(-1)}>Cancel</Button>
 				</div>
             </Grid>

@@ -6,11 +6,16 @@ import Keycloak from 'keycloak-js';
 // "resource": "webapp",
 // "public-client": true,
 // "confidential-port": 0
+const url = process.env.REACT_APP_KEYCLOACK_URL || '';
+const realm = process.env.REACT_APP_KEYCLOACK_REALM || '';
+const clientId = process.env.REACT_APP_KEYCLOACK_CLIENT_ID || '';
+
 const keycloak = new Keycloak({
-    url: 'https://keycloak12.cloud.korewireless.com/auth/',
-    realm: 'GCP',
-    clientId: 'webapp',
+    url,
+    realm,
+    clientId,
 });
+
 keycloak.onReady = (auth: boolean) => {
     console.log('token@@@@-----', keycloak.token);
     

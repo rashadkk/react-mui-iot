@@ -1,17 +1,18 @@
-import { Box, Button, Divider, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography } from "@mui/material";
+import { Box, Button, Divider, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography } from "@mui/material";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Sidebar from '../../components/sidebar/sidebar';
 import { Edit, Delete } from "@mui/icons-material";
 import registryService from "../../services/registry.service";
 import { useEffect, useState } from "react";
 import ConfirmBox from "../../components/confirm/confirm";
+import AddCaCertificateModal from "./add-ca-certificate-modal";
 
 
 const RegistryOverview = () => {
 
-
     const [registryDetails, setRegistryDetails] = useState<any>({});
     const [deletePopupOpen, setDeletePopupOpen] = useState(false)
+    const [addCertPopup, setAddCertPopup] = useState(false)
 
     const routerParams = useParams();
     const [queryParams] = useSearchParams();
@@ -28,7 +29,10 @@ const RegistryOverview = () => {
         try {
             if(registryId && region) {
                 const resp = await registryService.getRegistry(registryId, region);
-                setRegistryDetails(resp.data?.details)
+                const registryDetails = resp.data?.details;
+                const certs = registryDetails?.credentials?.filter((cert: any) => !!cert?.publicKeyCertificate?.certificate)
+                registryDetails.certs = certs;
+                setRegistryDetails(registryDetails)
             }
         } catch (error) {
             console.log(error)
@@ -39,7 +43,7 @@ const RegistryOverview = () => {
         getRegistry();
     }, [registryId])
 
-    const deleRegistry = async () => {
+    const deleteRegistry = async () => {
         try {
             if(registryId && region) {
                 await registryService.deleteRegistry(registryId, region);
@@ -49,6 +53,21 @@ const RegistryOverview = () => {
             
         }
     }
+
+    const deleteCACert = async (certObject: any) => {
+        try {
+            if(region && registryId) {
+                const data = {
+                    credentials: certObject
+                }
+                await registryService.deleteCACertificate(region, registryId, data);
+                getRegistry();
+                
+            }
+        } catch (error) {
+            console.log('Error', error);
+        }
+    }
     
 
 
@@ -56,9 +75,9 @@ const RegistryOverview = () => {
     <Box sx={{ padding: 0, display: 'flex' }}>
         <Sidebar registry={registryId} region={region} />
         <Box className="flex-grow-1">
-            <Toolbar sx={{ backgroundColor: '#fff', borderBottom: '1px solid #cdcdcd' }}>
+            <Toolbar sx={{  borderBottom: '1px solid #cdcdcd' }}>
                 <Typography variant="h5" fontWeight={500} component="h1">Registry details</Typography>
-                <Button sx={{ marginLeft: '3rem' }} onClick={() => { navigate(`/registries/${registryId}/edit`) }}>
+                <Button sx={{ marginLeft: '3rem' }} onClick={() => { navigate(`/registries/${registryId}/edit?region=${region}`) }}>
                     <Edit sx={{ marginRight: '.35rem' }} />
                     Edit Registry
                 </Button>
@@ -67,7 +86,7 @@ const RegistryOverview = () => {
                     Delete Registry
                 </Button>
             </Toolbar>
-
+            
             <Box sx={{ padding: '1.5rem'}} >
                 <Typography className="mb-4" variant="h5" component="h1">Registry ID: {registryId}</Typography>
                 <Grid container>
@@ -139,13 +158,71 @@ const RegistryOverview = () => {
                     </Table>
                 </TableContainer>
 
+                <Box marginY={6}>
+                    <Typography className="mb-2" variant="h5" component="h1">CA certificates</Typography>
+                    <Typography variant="body2">A registry can have up to 10 CA certificates for device authentication</Typography>
+                    
+                    <Box paddingY={3}>
+                        <Button 
+                            variant="contained"
+                            onClick={()=> setAddCertPopup(true)}
+                        >Add Certificate</Button>
+                    </Box>
+                    
+
+                    <TableContainer >
+                        <Table sx={{ minWidth: 650, tableLayout: 'fixed' }} size="small" aria-label="a dense table">
+                            <TableHead sx={{ backgroundColor: '#fafafa' }}>
+                            <TableRow>
+                                <TableCell width="20%">Certificate value</TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {
+                                ( registryDetails?.certs?.length === 0) &&
+                                <TableRow>
+                                        <TableCell colSpan={2}>
+                                            No certificates added to the registry.
+                                        </TableCell>
+                                </TableRow>
+                                }
+                                {registryDetails?.certs?.map((row: any, index: number) => (
+                                    <TableRow
+                                        key={`certs-${index}`}
+                                    >
+                                        <TableCell className="text-truncate">
+                                            {row?.publicKeyCertificate?.certificate?.replace('-----BEGIN CERTIFICATE-----', '')}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <IconButton onClick={() => deleteCACert(row)}>
+                                                <Delete color="disabled" fontSize="small" />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+            </TableContainer>
+                </Box>
+
             </Box>
         </Box>
+        <AddCaCertificateModal
+            open={addCertPopup}
+            handleClose={()=>setAddCertPopup(false)}
+            region={region || ''}
+            registryId={registryId || ''}
+            onAddComplete={() => {
+                getRegistry();
+                setAddCertPopup(false);
+            }}
+        />
         <ConfirmBox
             title="Delete Registry"
             open={deletePopupOpen}
             handleClose={()=> setDeletePopupOpen(false)}
-            handleOk={deleRegistry}
+            handleOk={deleteRegistry}
         />
     </Box>
   )

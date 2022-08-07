@@ -2,7 +2,7 @@ import { useState } from 'react'
 // import { makeStyles } from '@mui/material'
 // import { makeStyles } from "@mui/styles";
 
-export function useForm(initialFValues: any, validateOnChange = false, validate: any) {
+export function useForm(initialFValues: any, validateOnChange = false, validate?: any) {
 
     const [values, setValues] = useState(initialFValues);
     const [errors, setErrors] = useState({});

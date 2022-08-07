@@ -35,11 +35,13 @@ class API {
   }
 
   patch(url: string, data: any) {
-    return axios.patch(url, data);
+    return axios.patch(url);
   }
 
-  delete(url: string) {
-    return axios.delete(url);
+  delete(url: string, data?: any) {
+    return axios.delete(url, {
+      data
+    });
   }
 }
 

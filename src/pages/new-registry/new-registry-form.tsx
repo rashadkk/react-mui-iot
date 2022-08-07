@@ -1,46 +1,37 @@
-import { FormEvent } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
-	Autocomplete, createFilterOptions, FormControl, Button,
-	FormGroup, Grid, TextField, Typography
+ createFilterOptions,  Button,
+	FormGroup, Grid,  Typography
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Form, useForm } from "../../components/useForm";
 import Controls from "../../components/controls/Controls";
 import registryService from "../../services/registry.service";
 
-// import Button from "../../components/controls/Button";
+import { regions, cloudLoggingOptions } from '../../global/constants';
 
-// const project = 'famous-palisade-356103';
 
-const initialFormValues = {
-	mqttEnabledState: true,
-	httpEnabledState: true,
-	logLevel: 'DISABLED',
-	certInputMethod: 'MANUAL'
-}
-
-const regions = [
-	{ id: 'us-central1', title: 'us-central1' },
-	{ id: 'europe-west1', title: 'europe-west1' },
-	{ id: 'asia-east1', title: 'asia-east1' },
-]
-
-const cloudLoggingOptions = [
-	{ id: "DISABLED", title: 'Disabled' },
-	{ id: "ERROR", title: 'Error' },
-	{ id: "INFO", title: 'Info' },
-	{ id: "DEBUG", title: 'Debug' },
-]
-
-const filter = createFilterOptions<any>();
+// const filter = createFilterOptions<any>();
 
 interface Props {
 	editMode?: boolean
-  }
+}
 
 const NewRegistryForm = (props: Props) => {
 	const { editMode } = props;
+
+	const [initialFormValues, setInitialFormValues] = useState({});
+	// const [registryDetails, setRegistryDetails] = useState<any>({});
+
+    const routerParams = useParams();
+    const [queryParams] = useSearchParams();
+
+    const navigate = useNavigate();
+
+
+	const { registryId } = routerParams;
+    const region = queryParams.get('region');
 
 	const validate = (fieldValues = values) => {
 		let temp = { ...errors }
@@ -60,22 +51,70 @@ const NewRegistryForm = (props: Props) => {
 			return Object.values(temp).every(x => x == "")
 	}
 
-	const navigate = useNavigate();
-
 	const {
 		values,
-		setValues,
 		errors,
+		setValues,
 		setErrors,
 		handleInputChange,
-		resetForm
+		// resetForm
 	} = useForm(initialFormValues, true, validate);
 
-	console.log('values', values);
+	const getRegistry = async () => {
+        try {
+            if(registryId && region) {
+                const resp = await registryService.getRegistry(registryId, region);
+				const registryDetails = resp.data?.details;
+                // setRegistryDetails(registryDetails);
+			
+
+				let pubsubTopicName = '';
+				const topicName = registryDetails?.stateNotificationConfig?.pubsubTopicName?.split('/');
+				if(topicName?.length) {
+					pubsubTopicName = topicName[topicName.length -1]
+				}
+				setValues({
+					id: registryId,
+					region: region,
+					mqttEnabledState: registryDetails?.mqttConfig?.mqttEnabledState === 'MQTT_ENABLED',
+					httpEnabledState: registryDetails?.httpConfig?.httpEnabledState === 'HTTP_ENABLED',
+					logLevel: registryDetails?.logLevel,
+					pubsubTopicName: pubsubTopicName
+				})
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+	useEffect(() => {
+	  if(editMode) {
+		getRegistry();
+	  }else {
+		const initialFormValues = {
+			mqttEnabledState: true,
+			httpEnabledState: true,
+			logLevel: 'DISABLED',
+			certInputMethod: 'MANUAL'
+		}
+		setValues(initialFormValues)
+	  }
+	}, [])
+	
+	
 
 	const createRegistry = async (params: any) => {
 		try {
 			await registryService.createRegistry(params);
+			navigate(`/registries/${params?.id}/overview?region=${params?.region}`);
+		} catch (error) {
+			console.log('Error', error);
+		}
+	}
+
+	const updateRegistry = async (params: any) => {
+		try {
+			await registryService.editRegistry(params?.id, params);
 			navigate(`/registries/${params?.id}/overview?region=${params?.region}`);
 		} catch (error) {
 			console.log('Error', error);
@@ -110,28 +149,32 @@ const NewRegistryForm = (props: Props) => {
 			}
             // resetForm()
 			console.log('params', params);
-			createRegistry(params)
+			if(!editMode) {
+				createRegistry(params)
+				return
+			}
+			updateRegistry(params)
+
         }
     }
 
 	return (
 		<Form className="p-4" onSubmit={handleSubmit}>
 			<Grid container>
-				<Grid container item sm={12} md={8} xl={6} gap={5}>
-					<Typography variant="h5" component="h2">Registry properties</Typography>
+				<Grid container item sm={12} md={6} xl={4} gap={5}>
 					<Grid item sm={12}>
+						<Typography variant="h6" marginBottom={2} fontWeight={500} component="h2">Registry properties</Typography>
 						<Controls.Input
 							name="id"
 							label="Registry ID"
 							placeholder="Registry ID"
 							value={values?.id || ''}
 							onChange={handleInputChange}
-							// size="small"
 							required
 							fullWidth
+							disabled={editMode}
+							className="mb-4"
 						/>
-					</Grid>
-					<Grid item sm={12}>
 						<Controls.Select
 							name="region"
 							label="Region"
@@ -139,12 +182,12 @@ const NewRegistryForm = (props: Props) => {
 							options={regions}
 							value={values?.region || ''}
 							onChange={handleInputChange}
-							// size="small"
+							disabled={editMode}
 							required
 						/>
 					</Grid>
-					<Typography variant="h5" component="h2">Cloud Pub/Sub topics (Optional)</Typography>
 					<Grid item sm={12}>
+						<Typography variant="h6"  marginBottom={2} fontWeight={500} component="h2">Cloud Pub/Sub topics (Optional)</Typography>
 						<Controls.Input
 							name="pubsubTopicName"
 							label="Cloud Pub/Sub topic"
@@ -209,8 +252,8 @@ const NewRegistryForm = (props: Props) => {
 							/>
 						</FormControl> */}
 					</Grid>
-					<Typography variant="h5" component="h2">Protocol</Typography>
 					<Grid item sm={12}>
+						<Typography variant="h6" marginBottom={2} fontWeight={500} component="h2">Protocol</Typography>
 						<FormGroup>
 							<Controls.Checkbox
 								label="MQTT"
@@ -226,8 +269,8 @@ const NewRegistryForm = (props: Props) => {
 							/>
 						</FormGroup>
 					</Grid>
-					<Typography variant="h5" component="h2">Cloud Logging</Typography>
 					<Grid item sm={12}>
+						<Typography variant="h6" marginBottom={2} fontWeight={500} component="h2">Cloud Logging</Typography>
 						<Controls.RadioGroup
 							name="logLevel"
 							value={values?.logLevel || ''}
@@ -235,30 +278,36 @@ const NewRegistryForm = (props: Props) => {
 							items={cloudLoggingOptions}
 						/>
 					</Grid>
-					<Typography variant="h5" component="h2">CA certificate (optional)</Typography>
-					<Grid item sm={12}>
-						<Controls.RadioGroup
-							name="certInputMethod"
-							value={values?.certInputMethod}
-							onChange={handleInputChange}
-							items={[
-								{ id: 'MANUAL', title: 'Enter manually' },
-								{ id: 'UPLOAD', title: 'Upload', disabled: true },
-							]}
-						/>
-						<Controls.Input
-							fullWidth
-							label="Certificate value"
-							name="certValue"
-							onChange={handleInputChange}
-							multiline
-							rows={6}
-							value={values?.certValue}
-							placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}
-						/>
-					</Grid>
+					{
+						!editMode && (
+							<>		
+								<Grid item sm={12}>
+									<Typography variant="h6" component="h2">CA certificate (optional)</Typography>
+									<Controls.RadioGroup
+										name="certInputMethod"
+										value={values?.certInputMethod || ''}
+										onChange={handleInputChange}
+										items={[
+											{ id: 'MANUAL', title: 'Enter manually' },
+											{ id: 'UPLOAD', title: 'Upload', disabled: true },
+										]}
+									/>
+									<Controls.Input
+										fullWidth
+										label="Certificate value"
+										name="certValue"
+										onChange={handleInputChange}
+										multiline
+										rows={6}
+										value={values?.certValue || ''}
+										placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}
+									/>
+								</Grid>
+							</>
+						)
+					}
 					<div className="d-flex" >
-						<Button variant="contained" type="submit">Create</Button>
+						<Button variant="contained" type="submit">{ editMode ? 'Update': 'Create'}</Button>
 						<Button onClick={() => navigate(-1)}>Cancel</Button>
 					</div>
 				</Grid>

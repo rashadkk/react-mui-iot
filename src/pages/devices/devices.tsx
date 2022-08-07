@@ -1,9 +1,9 @@
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Box, Button, Divider, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography } from '@mui/material'
+import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Box, Button, Link, Divider, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography } from '@mui/material'
 import RoutePaths from '../../routes/route';
 // import Button from "../../components/controls/Button"
 import Sidebar from '../../components/sidebar/sidebar'
-import { Add } from '@mui/icons-material';
+import { AddBox } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import deviceService from '../../services/device.service';
 
@@ -38,23 +38,23 @@ const Devices = () => {
     <Box sx={{ display: 'flex' }}>
         <Sidebar registry={registryId} region={region} />
         <Box className="flex-grow-1"> 
-            <Toolbar sx={{ backgroundColor: '#f7f5f5', borderBottom: '1px solid #cdcdcd', marginBottom: '1.5rem' }}>
+            <Toolbar sx={{ borderBottom: '1px solid #cdcdcd'}}>
                 <Typography variant="h5" component="h1">Devices</Typography>
                 <Button sx={{ marginLeft: '3rem' }} onClick={() => navigate(`new?region=${region}`)}>
-                    <Add />
+                    <AddBox />
                      Create Device
                 </Button>
             </Toolbar>
 
             <Box>
                 <Box sx={{padding: '1.5rem'}}>
-                    <Typography className="mb-4" variant="h5" component="h1">Registry ID: {registryId}</Typography>
+                    <Typography className="mb-3" variant="h6" fontWeight={500} component="h1">Registry ID: {registryId}</Typography>
                     <Typography variant="body2">{region}</Typography>
                 </Box>
-                <Divider />
+                <Divider sx={{ opacity: 1 }} />
             </Box>
 
-            <TableContainer sx={{margin: '1.5rem'}} >
+            <TableContainer >
             <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
                 <TableHead sx={{ backgroundColor: '#fafafa' }}>
                 <TableRow>
@@ -68,14 +68,16 @@ const Devices = () => {
                 {devices.map((row: any) => (
                     <TableRow
                     key={row?.id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                         <TableCell component="th" scope="row">
-                            <Link to={`${row?.id}/devices/${row.id}`}>{row?.id}</Link>
+                            <Link underline="hover" color="inherit" component={RouterLink} to={`${row?.id}/overview?region=${region}`}>
+                                {row?.id}
+                            </Link>
                         </TableCell>
-                        <TableCell>{'-'}</TableCell>
-                        <TableCell>{''}</TableCell>
-                        <TableCell>{row.cloudLoging}</TableCell>
+                        <TableCell>{row?.blocked ? 'Blocked': 'Allowed'}</TableCell>
+                        <TableCell>{'_'}</TableCell>
+                        <TableCell sx={{ textTransform: 'capitalize' }} >{row?.loglevel?.toLowerCase()}</TableCell>
                     </TableRow>
                 ))}
                 </TableBody>

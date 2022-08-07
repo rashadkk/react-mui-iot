@@ -10,23 +10,24 @@ interface RadioProps extends RadioGroupProps{
     label?: string
     items: Array<ItemType>
     helperText?: string
+    size?: string
 }
 
 export default function RadioGroup(props: RadioProps) {
 
-    const { name, label, value, onChange, items, helperText, row = false } = props;
+    const { name, label, value, onChange, size = 'small', items, helperText, row = false } = props;
 
     return (
-        <FormControl>
+        <FormControl size={'small'}>
             <FormLabel>{label}</FormLabel>
             <MuiRadioGroup row={row}
                 name={name}
-                value={value}
+                value={value}               
                 onChange={onChange}>
                 {
                     items.map(
                         (item) => (
-                            <FormControlLabel key={item.id} value={item.id} control={<Radio disabled={item?.disabled} />} label={item.title} />
+                            <FormControlLabel key={item.id} value={item.id} control={<Radio size='small' disabled={item?.disabled} />} label={item.title} />
                         )
                     )
                 }

@@ -12,18 +12,17 @@ interface Props {
 const NewRegistry = (props: Props) => {
 
   const { editMode } = props;
-
   const navigate = useNavigate();
 
   return (
     <>
-      <Toolbar sx={{ backgroundColor: '#f7f5f5', borderBottom: '1px solid #cdcdcd' }}>
+      <Toolbar sx={{ borderBottom: '1px solid #cdcdcd' }}>
         <IconButton sx={{ marginRight: '1.5rem' }} color="inherit" onClick={() => navigate(-1)}>
           <ArrowBack color="primary" />
         </IconButton>
         <Typography variant="h5" fontWeight={500} component="h1">{ editMode? 'Edit Registry' : 'Create Registry'}</Typography>
       </Toolbar>
-      <NewRegistryForm />
+      <NewRegistryForm editMode={editMode} />
     </>
   )
 }

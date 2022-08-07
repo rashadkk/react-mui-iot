@@ -21,9 +21,10 @@ class RegistryService {
         return api.post(url, params)
     }
 
-    editRedistry = (registryId: string, params: any) => {
+    editRegistry = (registryId: string, params: any) => {
         const region = params?.region;
-        const url = `/registry/projects/${project}/locations/${region}/registries/${registryId}`;
+        const updateMasks = 'event_notification_configs,state_notification_config,mqtt_config,http_config,log_level'
+        const url = `/registry/projects/${project}/locations/${region}/registries/${registryId}?updateMask=${updateMasks}`;
         return api.patch(url, params)
     }
 
@@ -31,6 +32,17 @@ class RegistryService {
         const url = `/registry/projects/${project}/locations/${region}/registries/${registryId}`;
         return api.delete(url);
     }
+
+    addCACertificate = (region: string, registryId: string, certObject: any) => {
+        const url = `/registry/projects/${project}/locations/${region}/registries/${registryId}/certificate`;
+        return api.post(url, certObject);
+    }
+
+    deleteCACertificate = (region: string, registryId: string, certObject: any) => {
+        const url = `/registry/projects/${project}/locations/${region}/registries/${registryId}/certificate`;
+        return api.delete(url, certObject);
+    }
+
 }
 
 export default new RegistryService();

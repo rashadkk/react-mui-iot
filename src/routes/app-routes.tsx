@@ -15,7 +15,8 @@ import PublicRoute from '../components/PublicRoute';
 
 
 import { useKeycloak } from '@react-keycloak/web'
-import { CircularProgress, Stack } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
+import DeviceOverview from '../pages/device-overview/device-overview';
 
 
 const AppRoutes = () => {
@@ -24,9 +25,9 @@ const AppRoutes = () => {
 
   if(!initialized) {
     return (
-      <Stack sx={{ color: 'grey.500' }} spacing={2} direction="row">
-        <CircularProgress color="primary" />
-      </Stack>
+      <Box sx={{ color: 'grey.500', display: 'flex', height: 'calc(100vh - 64px)' }}  >
+        <CircularProgress color="primary" sx={{ margin: 'auto' }} />
+      </Box>
     )
   }
   
@@ -42,6 +43,8 @@ const AppRoutes = () => {
             <Route path=":registryId/devices" element={<DevicesLayout />}>
               <Route index element={<Devices />} />
               <Route path="new" element={<NewDevice />} />
+              <Route path=":deviceId/overview" element={<DeviceOverview />} />
+              <Route path=":deviceId/edit" element={<NewDevice editMode />} />
             </Route>
         </Route>
     </Routes>

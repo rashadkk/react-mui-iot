@@ -1,7 +1,10 @@
+import styles from './home.module.scss';
 
 const HomePage = () => {
   return (
-    <div>HomePage</div>
+    <div id={styles?.homeContainer}>
+        {/* <h2></h2> */}
+    </div>
   )
 }
 

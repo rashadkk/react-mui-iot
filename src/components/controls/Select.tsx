@@ -14,19 +14,20 @@ interface Props extends SelectProps {
 
 export default function Select(props: Props) {
 
-    const { name, label, value,error=null, onChange, options, size, placeholder, required } = props;
+    const { name, label, value,error=null, onChange, options, size, placeholder, required, disabled } = props;
 
     return (
-        <FormControl variant="outlined" fullWidth
+        <FormControl variant="outlined" fullWidth size={size}
         {...(error && {error:true})}>
             <InputLabel>{label}</InputLabel>
             <MuiSelect
                 label={label}
                 name={name}
                 value={value}
-                size={size}
+                size={size || 'small'}
                 placeholder={placeholder}
                 required={required}
+                disabled={disabled}
                 onChange={onChange}>
                 
                 <MenuItem value="">None</MenuItem>
