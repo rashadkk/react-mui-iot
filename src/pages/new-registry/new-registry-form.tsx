@@ -125,6 +125,9 @@ const NewRegistryForm = (props: Props) => {
         e.preventDefault()
         if (validate()){
 			const projectId = 'famous-palisade-356103';
+
+			const cred: Array<any> = [];
+
 			const params = {
 				id: values?.id,
 				region: values?.region,
@@ -140,15 +143,17 @@ const NewRegistryForm = (props: Props) => {
 					pubsubTopicName: values?.pubsubTopicName ? `projects/${projectId}/topics/${values?.pubsubTopicName}` : ''
 				},
 				eventNotificationConfigs:[],
-				Credentials:[{
+				Credentials: cred
+			}
+
+			if(values?.certValue) {
+                params.Credentials.push({
 					publicKeyCertificate: {
 						format: 'X509_CERTIFICATE_PEM',
 						certificate: values?.certValue
 					}
-				}]
-			}
-            // resetForm()
-			console.log('params', params);
+				})
+            }
 			if(!editMode) {
 				createRegistry(params)
 				return

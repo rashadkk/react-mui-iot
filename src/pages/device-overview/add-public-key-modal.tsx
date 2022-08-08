@@ -4,7 +4,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
 import DialogTitle from '@mui/material/DialogTitle';
-import { CircularProgress, Grid, Stack, Typography } from '@mui/material';
+import { Alert, CircularProgress, Grid, Stack, Typography } from '@mui/material';
 import Controls from '../../components/controls/Controls';
 
 import { useForm } from '../../components/useForm';
@@ -30,6 +30,8 @@ export default function AddPublicKeyModal(props: Props) {
     const [loading, setLoading] = useState(false);
     const [keyFormats, setKeyFormats] = useState(publicKeyFormat)
 
+    const [errorText, setErrorText] = useState('');
+
 
     // const validate = (fieldValues = values) => {
     //     const temp: any =  { ...errors }
@@ -50,6 +52,7 @@ export default function AddPublicKeyModal(props: Props) {
     const closeHandler = () => {
         resetForm();
         handleClose();
+        setErrorText('');
     }
 
     const addCertHandler = () => {
@@ -70,6 +73,7 @@ export default function AddPublicKeyModal(props: Props) {
                 }
             }
             setLoading(true);
+            setErrorText('');
             const resp = await deviceService.addPublicKey(deviceId, registryId, region, certObject);
             console.log('certificate registry', resp.data);
             
@@ -77,9 +81,12 @@ export default function AddPublicKeyModal(props: Props) {
             setLoading(false);
             resetForm();
         
-        } catch (error) {
-            console.log('error=====>', error);
+        } catch (error: any) {
+            console.log('error=====>', error?.response?.data?.message);
             setLoading(false);
+            if(error?.response?.data?.message){
+                setErrorText(error?.response?.data?.message)
+            }
         }
     }
 
@@ -144,6 +151,13 @@ export default function AddPublicKeyModal(props: Props) {
                         // error={!!(errors['certValue'])}
                         // helperText={errors['certValue']}
                     />
+                }
+                {
+                    errorText && (
+                        <Stack sx={{ width: '100%', marginTop: '1rem' }} spacing={2}>
+                            <Alert severity="error">{errorText}</Alert>
+                        </Stack>
+                    )
                 }
             </Grid>
             </>
