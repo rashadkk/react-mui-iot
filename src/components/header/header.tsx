@@ -63,7 +63,7 @@ const Header = () => {
         {
           !!keycloak.authenticated && (
             <Button color="inherit" onClick={() => keycloak.logout()}>
-              Logout ({keycloak?.tokenParsed?.preferred_username})
+              Logout ({keycloak?.tokenParsed?.preferred_username?.split('@')[0]})
             </Button>
           )
         }

@@ -3,7 +3,8 @@ import { FormControl, InputLabel, Select as MuiSelect, MenuItem, FormHelperText,
 
 type OptionType = {
     id: string | number,
-    title: string
+    title: string,
+    disabled?: boolean
 }
 
 interface Props extends SelectProps {
@@ -29,11 +30,13 @@ export default function Select(props: Props) {
                 required={required}
                 disabled={disabled}
                 onChange={onChange}>
-                
-                <MenuItem value="">None</MenuItem>
+                {
+                    !required &&
+                    <MenuItem value="">None</MenuItem>
+                }
                 {
                     options.map(
-                        item => (<MenuItem key={item.id} value={item.id}>{item.title}</MenuItem>)
+                        item => (<MenuItem key={item.id} disabled={item?.disabled} value={item.id}>{item.title}</MenuItem>)
                     )
                 }
             </MuiSelect>

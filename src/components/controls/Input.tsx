@@ -2,7 +2,7 @@ import { TextField, TextFieldProps } from '@mui/material';
 
 export default function Input(props: TextFieldProps) {
 
-    const { name, label, value,error=null, size, onChange, ...other } = props;
+    const { name, label, value, size, onChange, ...other } = props;
     return (
         <TextField
             variant="outlined"
@@ -12,7 +12,7 @@ export default function Input(props: TextFieldProps) {
             size={size || 'small'}
             onChange={onChange}
             {...other}
-            {...(error && {error:true,helperText:error})}
+            // {...(error && {error:true,helperText:error})}
         />
     )
 }

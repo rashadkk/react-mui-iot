@@ -194,6 +194,7 @@ function NewDeviceForm(props: Props) {
                                     value={values?.publicKeyFormat || ''}
                                     label="Public key format"
                                     onChange={handleInputChange}
+                                    required
                             />
                                 {
                                     values?.inputMethod === 'MANUAL' &&

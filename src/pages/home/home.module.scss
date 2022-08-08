@@ -3,6 +3,8 @@
     background-image: url('https://www.korewireless.com/hs-fs/hubfs/Connectivity_1920x700%20Header.jpg?length=1920&name=Connectivity_1920x700%20Header.jpg');
     // mask-image: linear-gradient(to bottom, transparent 0%, #000);
     display: flex;
+    background-repeat: no-repeat;
+    background-size: cover;
     h2 {
         color: white;
         margin: auto;

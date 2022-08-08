@@ -2,6 +2,10 @@ export const regions = [
 	{ id: 'us-central1', title: 'us-central1' },
 	{ id: 'europe-west1', title: 'europe-west1' },
 	{ id: 'asia-east1', title: 'asia-east1' },
+	{ id: 'asia-northeast1', title: 'asia-northeast1' },
+	{ id: 'asia-southeast1', title: 'asia-southeast1' },
+	{ id: 'australia-southeast1', title: 'australia-southeast1' },
+	{ id: 'southamerica-west1', title: 'southamerica-west1' },
 ]
 
 export const cloudLoggingOptions = [

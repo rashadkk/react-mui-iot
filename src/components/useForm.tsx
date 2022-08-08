@@ -5,7 +5,7 @@ import { useState } from 'react'
 export function useForm(initialFValues: any, validateOnChange = false, validate?: any) {
 
     const [values, setValues] = useState(initialFValues);
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState<any>({});
 
     const handleInputChange = (e:any) => {
         const { name, value } = e.target

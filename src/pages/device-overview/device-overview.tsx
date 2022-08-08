@@ -211,6 +211,7 @@ const DeviceOverview = () => {
             deviceId={deviceId || ''}
             registryId={registryId || ''}
             region={region || ''}
+            hasCACerificate={deviceDetails?.capresent}
         />
 </Box>
   )

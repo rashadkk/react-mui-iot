@@ -4,13 +4,15 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
 import DialogTitle from '@mui/material/DialogTitle';
-import { CircularProgress, Grid } from '@mui/material';
+import { CircularProgress, Grid, Stack, Typography } from '@mui/material';
 import Controls from '../../components/controls/Controls';
 
 import { useForm } from '../../components/useForm';
 import { publicKeyFormat } from '../../global/constants';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import deviceService from '../../services/device.service';
+import { Box } from '@mui/system';
+import { InfoRounded } from '@mui/icons-material';
 
 interface Props {
     region: string,
@@ -19,16 +21,31 @@ interface Props {
     open: boolean,
     handleClose: () => void,
     onAddComplete: () => void,
+    hasCACerificate: boolean,
 }
 
 export default function AddPublicKeyModal(props: Props) {
 
-    const { open, handleClose, onAddComplete, deviceId, registryId, region } = props;
+    const { open, handleClose, onAddComplete, deviceId, registryId, region, hasCACerificate } = props;
     const [loading, setLoading] = useState(false);
+    const [keyFormats, setKeyFormats] = useState(publicKeyFormat)
 
-    const { values, resetForm, handleInputChange } = useForm({inputMethod: 'MANUAL', publicKeyFormat: 'RSA_PEM' })
 
-    console.log('add public key', values)
+    // const validate = (fieldValues = values) => {
+    //     const temp: any =  { ...errors }
+    //     if(!fieldValues?.certValue) {
+    //         temp.certValue = 'This field is required'
+    //     }
+    //     if(!fieldValues?.keyFormat) {
+    //         temp.keyFormat = 'This field is required'
+    //     }
+    //     setErrors(temp);
+    //     return Object.values(temp).every(x => x == "")
+    // }
+
+    const { values, resetForm, handleInputChange, errors, setValues, setErrors } = useForm({inputMethod: 'MANUAL', keyFormat: 'RSA_PEM' })
+
+    console.log('error', errors);
 
     const closeHandler = () => {
         resetForm();
@@ -36,7 +53,7 @@ export default function AddPublicKeyModal(props: Props) {
     }
 
     const addCertHandler = () => {
-        if(!values?.certValue || !values?.publicKeyFormat) return;
+        if(!values?.certValue || !values?.keyFormat) return;
         addAuthCertificate(values?.certValue);
     }
 
@@ -47,7 +64,7 @@ export default function AddPublicKeyModal(props: Props) {
                 {
                     expirationTime: '',
                     publicKey: {
-                        format: values?.publicKeyFormat,
+                        format: values?.keyFormat,
                         key: values?.certValue
                     }
                 }
@@ -64,7 +81,16 @@ export default function AddPublicKeyModal(props: Props) {
             console.log('error=====>', error);
             setLoading(false);
         }
-}
+    }
+
+    useEffect(() => {
+        const keyFormatsUpdated = keyFormats?.map(item => 
+            (hasCACerificate && ['RSA_PEM', 'ES256_PEM'].includes(item?.id)) ? {...item, disabled: true} : item  
+        )
+        setKeyFormats(keyFormatsUpdated)
+        if(hasCACerificate) setValues((prev: any) => ({...prev, keyFormat: 'RSA_X509_PEM' }))
+    }, [hasCACerificate])
+    
 
   return (
     <div>
@@ -72,8 +98,7 @@ export default function AddPublicKeyModal(props: Props) {
         <DialogTitle>Add authentication key</DialogTitle>
         <DialogContent>
           <Grid container>
-          <>         
-                            
+          <>                       
             <Grid item sm={12}>
                 <Controls.RadioGroup
                         name="inputMethod"
@@ -84,13 +109,24 @@ export default function AddPublicKeyModal(props: Props) {
                             { id: 'UPLOAD', title: 'Upload', disabled: true },
                         ]}
                 />
+                {
+                    hasCACerificate && (
+                        <Box paddingX={2} paddingY={1} marginY={2} sx={{ backgroundColor: '#f2f2f2' }} borderRadius={0.75}>
+                            <Stack spacing={4} direction="row" alignItems="center">
+                                <InfoRounded color="inherit" />
+                                <Typography variant="body2">The registry for this device has a CA certificate, which requires the device's public key to be wrapped in an X.509 certificate.</Typography>
+                            </Stack>
+                        </Box>
+                    )
+                }
                 <Controls.Select
-                        name="publicKeyFormat"
-                        options={publicKeyFormat}
-                        value={values?.publicKeyFormat}
+                        name="keyFormat"
+                        options={keyFormats}
+                        value={values?.keyFormat}
                         label="Public key format"
                         size="small"
                         onChange={handleInputChange}
+                        required
                 />
                 {
                     values?.inputMethod === 'MANUAL' &&
@@ -105,9 +141,11 @@ export default function AddPublicKeyModal(props: Props) {
                         rows={6}
                         className="mt-4"
                         placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}
+                        // error={!!(errors['certValue'])}
+                        // helperText={errors['certValue']}
                     />
                 }
-                </Grid>
+            </Grid>
             </>
           </Grid>
         </DialogContent>

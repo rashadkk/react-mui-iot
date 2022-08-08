@@ -28,7 +28,7 @@ const Sidebar = (props: RegistrySideBarProps) => {
 			<nav aria-label="main mailbox folders">
 				<List>
 					<ListItem disablePadding>
-						<ListItemButton onClick={() => navigate('/'+RoutePath.registries)}>
+						<ListItemButton onClick={() => navigate(`/registries/${registry}/overview?region=${region}`)}>
 							<ListItemText primary="Registries" />
 						</ListItemButton>
 						{/* <ListItemText>

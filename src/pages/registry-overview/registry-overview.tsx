@@ -6,6 +6,7 @@ import registryService from "../../services/registry.service";
 import { useEffect, useState } from "react";
 import ConfirmBox from "../../components/confirm/confirm";
 import AddCaCertificateModal from "./add-ca-certificate-modal";
+import ConfirmBoxWithID from "../../components/ConfirmBoxWithID";
 
 
 const RegistryOverview = () => {
@@ -88,7 +89,7 @@ const RegistryOverview = () => {
             </Toolbar>
             
             <Box sx={{ padding: '1.5rem'}} >
-                <Typography className="mb-4" variant="h5" component="h1">Registry ID: {registryId}</Typography>
+                <Typography className="mb-4" variant="h6" fontWeight={500} component="h1">Registry ID: {registryId}</Typography>
                 <Grid container>
                     <Grid item sm={6}>
 
@@ -131,7 +132,7 @@ const RegistryOverview = () => {
                     </Grid>
                 </Grid>
 
-                <Typography className="mb-2" variant="h5" component="h1">Cloud Pub/Sub topics</Typography>
+                <Typography className="mb-2" variant="h6" fontWeight={500} component="h1">Cloud Pub/Sub topics</Typography>
                 <Typography variant="body2">A registry can have 1 or more topics for publishing device telemetry and state events.</Typography>
                 
                 <TableContainer sx={{ marginTop: '1.5rem' }} >
@@ -218,11 +219,21 @@ const RegistryOverview = () => {
                 setAddCertPopup(false);
             }}
         />
-        <ConfirmBox
+        {/* <ConfirmBox
             title="Delete Registry"
             open={deletePopupOpen}
             handleClose={()=> setDeletePopupOpen(false)}
             handleOk={deleteRegistry}
+        /> */}
+        <ConfirmBoxWithID
+            title="Delete Registry"
+            contentText="Deleting a registry will permanently remove the registry from your project."
+            open={deletePopupOpen}
+            handleClose={()=> setDeletePopupOpen(false)}
+            handleOk={deleteRegistry}
+            confirmText={registryId}
+            okText="Delete"
+            cancelText="Cancel"
         />
     </Box>
   )
