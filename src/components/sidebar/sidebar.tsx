@@ -29,7 +29,7 @@ const Sidebar = (props: RegistrySideBarProps) => {
 				<List>
 					<ListItem disablePadding>
 						<ListItemButton onClick={() => navigate(`/registries/${registry}/overview?region=${region}`)}>
-							<ListItemText primary="Registries" />
+							<ListItemText primary="Registry details" />
 						</ListItemButton>
 						{/* <ListItemText>
 
