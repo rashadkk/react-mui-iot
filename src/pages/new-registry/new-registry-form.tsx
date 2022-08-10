@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
-import {
- createFilterOptions,  Button,
-	FormGroup, Grid,  Typography
+import { Alert, Button,
+	FormGroup, Grid,  Stack,  Typography
 } from "@mui/material";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
@@ -10,6 +9,7 @@ import Controls from "../../components/controls/Controls";
 import registryService from "../../services/registry.service";
 
 import { regions, cloudLoggingOptions } from '../../global/constants';
+import RenderElement from "../../components/RenderElement";
 
 
 // const filter = createFilterOptions<any>();
@@ -21,8 +21,8 @@ interface Props {
 const NewRegistryForm = (props: Props) => {
 	const { editMode } = props;
 
-	const [initialFormValues, setInitialFormValues] = useState({});
 	// const [registryDetails, setRegistryDetails] = useState<any>({});
+	const [errorText, setErrorText] = useState('');
 
     const routerParams = useParams();
     const [queryParams] = useSearchParams();
@@ -47,18 +47,18 @@ const NewRegistryForm = (props: Props) => {
 		//     ...temp
 		// })
 
-		if (fieldValues == values)
-			return Object.values(temp).every(x => x == "")
+		if (fieldValues === values)
+			return Object.values(temp).every(x => x === "")
 	}
 
 	const {
 		values,
 		errors,
 		setValues,
-		setErrors,
+		// setErrors,
 		handleInputChange,
 		// resetForm
-	} = useForm(initialFormValues, true, validate);
+	} = useForm({}, true, validate);
 
 	const getRegistry = async () => {
         try {
@@ -66,8 +66,6 @@ const NewRegistryForm = (props: Props) => {
                 const resp = await registryService.getRegistry(registryId, region);
 				const registryDetails = resp.data?.details;
                 // setRegistryDetails(registryDetails);
-			
-
 				let pubsubTopicName = '';
 				const topicName = registryDetails?.stateNotificationConfig?.pubsubTopicName?.split('/');
 				if(topicName?.length) {
@@ -105,19 +103,25 @@ const NewRegistryForm = (props: Props) => {
 
 	const createRegistry = async (params: any) => {
 		try {
+			setErrorText('');
 			await registryService.createRegistry(params);
 			navigate(`/registries/${params?.id}/overview?region=${params?.region}`);
-		} catch (error) {
-			console.log('Error', error);
+		} catch (error: any) {
+			if(error?.response?.data?.message){
+                setErrorText(error?.response?.data?.message)
+            }
 		}
 	}
 
 	const updateRegistry = async (params: any) => {
 		try {
+			setErrorText('');
 			await registryService.editRegistry(params?.id, params);
 			navigate(`/registries/${params?.id}/overview?region=${params?.region}`);
-		} catch (error) {
-			console.log('Error', error);
+		} catch (error: any) {
+			if(error?.response?.data?.message){
+                setErrorText(error?.response?.data?.message)
+            }
 		}
 	}
 
@@ -201,61 +205,6 @@ const NewRegistryForm = (props: Props) => {
 							onChange={handleInputChange}
 							fullWidth
 						/>
-						{/* <FormControl fullWidth>
-							<Autocomplete
-								value={values?.pubsubTopicName}
-								onChange={(event, newValue) => {
-									// console.log(event, newValue)
-									// if (typeof newValue === 'string') {
-									//   setValue({
-									//     title: newValue,
-									//   });
-									//   handleInputChange()
-									// } else if (newValue && newValue.inputValue) {
-									//   // Create a new value from the user input
-									//   setValue({
-									//     title: newValue.inputValue,
-									//   });
-									// } else {
-									//   setValue(newValue);
-									// }
-								}}
-								filterOptions={(options, params) => {
-									const filtered = filter(options, params);
-									const { inputValue } = params;
-									// Suggest the creation of a new value
-									const isExisting = options.some((option) => inputValue === option.title);
-									if (inputValue !== '' && !isExisting) {
-										filtered.push({
-											inputValue,
-											title: `Add "${inputValue}"`,
-										});
-									}
-									return filtered;
-								}}
-								selectOnFocus
-								clearOnBlur
-								handleHomeEndKeys
-								options={regions}
-								getOptionLabel={(option: any) => {
-									// Value selected with enter, right from the input
-									if (typeof option === 'string') {
-										return option;
-									}
-									// Add "xxx" option created dynamically
-									if (option.inputValue) {
-										return option.inputValue;
-									}
-									// Regular option
-									return option.title;
-								}}
-								renderOption={(props, option) => <li {...props}>{option.title}</li>}
-								freeSolo
-								renderInput={(params) => (
-									<TextField {...params} label="Cloud Pub/Sub topics" />
-								)}
-							/>
-						</FormControl> */}
 					</Grid>
 					<Grid item sm={12}>
 						<Typography variant="h6" marginBottom={2} fontWeight={500} component="h2">Protocol</Typography>
@@ -307,6 +256,11 @@ const NewRegistryForm = (props: Props) => {
 										value={values?.certValue || ''}
 										placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}
 									/>
+									<RenderElement show={!!errorText}>
+										<Stack sx={{ width: '100%', marginTop: '1rem' }} spacing={2}>
+											<Alert severity="error">{errorText}</Alert>
+										</Stack>
+									</RenderElement>
 								</Grid>
 							</>
 						)

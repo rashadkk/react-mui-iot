@@ -18,6 +18,7 @@ const DeviceOverview = () => {
     const [deviceDetails, setDeviceDetails] = useState<any>({});
     const [deletePopupOpen, setDeletePopupOpen] = useState(false);
     const [addPublicKeyPopupOpen, setAddPublicKeyPopupOpen] = useState(false);
+    const [selectedKey, setSelectedKey] = useState(null);
 
     const [tabValue, setTabValue] = useState(0);
 
@@ -61,6 +62,7 @@ const DeviceOverview = () => {
                     credentials: certObject
                 }
                 await deviceService.deletePublicKey(deviceId, registryId, region, data);
+                setSelectedKey(null);
                 getDevice();
             }
         } catch (error) {
@@ -184,7 +186,7 @@ const DeviceOverview = () => {
                                     </TableCell>
                                     <TableCell>{row?.expirationTime}</TableCell>
                                     <TableCell align="right">
-                                        <IconButton onClick={() => deletePublicKey(row)}>
+                                        <IconButton onClick={() => setSelectedKey(row)}>
                                             <Delete color="disabled" fontSize="small" />
                                         </IconButton>
                                     </TableCell>
@@ -200,6 +202,15 @@ const DeviceOverview = () => {
             open={deletePopupOpen}
             handleClose={()=> setDeletePopupOpen(false)}
             handleOk={deleteDevice}
+        />
+        <ConfirmBox
+            title="Delete key ?"
+            contentText="If all valid keys are deleted, the device won't be able to connect"
+            open={!!selectedKey}
+            handleClose={()=> setSelectedKey(null)}
+            handleOk={()=> deletePublicKey(selectedKey)}
+            cancelText="Cancel"
+            okText="Delete"
         />
         <AddPublicKeyModal
             open={addPublicKeyPopupOpen}

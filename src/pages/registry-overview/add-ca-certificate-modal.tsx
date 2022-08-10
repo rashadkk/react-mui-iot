@@ -3,7 +3,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { CircularProgress, Grid } from '@mui/material';
+import { Alert, CircularProgress, Grid, Stack } from '@mui/material';
 import Controls from '../../components/controls/Controls';
 
 // import LoadingButton from '@mui/material/Button'
@@ -11,6 +11,7 @@ import Controls from '../../components/controls/Controls';
 import { useForm } from '../../components/useForm';
 import registryService from '../../services/registry.service';
 import { useState } from 'react';
+import RenderElement from '../../components/RenderElement';
 
 interface Props {
     region: string,
@@ -23,15 +24,16 @@ interface Props {
 const AddCaCertificateModal = (props: Props) => {
 
     const { open, handleClose, region, registryId, onAddComplete } = props;
+
     const [loading, setLoading] = useState(false);
+    const [errorText, setErrorText] = useState('');
 
     const { values, handleInputChange, resetForm } = useForm({inputMethod: 'MANUAL' })
-
-    console.log('add public key', values);
 
     const closeHandler = () => {
         resetForm();
         handleClose();
+        setErrorText('')
     }
 
     const addCertHandler = () => {
@@ -51,16 +53,19 @@ const AddCaCertificateModal = (props: Props) => {
                 }
             }
             setLoading(true);
-           const resp = await registryService.addCACertificate(region, registryId, certObject);
-           console.log('certificate registry', resp.data);
-           
+            setErrorText('');
+
+           await registryService.addCACertificate(region, registryId, certObject);
+
            onAddComplete();
            setLoading(false);
            resetForm();
            
-        } catch (error) {
-            console.log('error=====>', error);
+        } catch (error: any) {
             setLoading(false);
+            if(error?.response?.data?.message){
+                setErrorText(error?.response?.data?.message)
+            }
         }
     }
 
@@ -96,6 +101,11 @@ const AddCaCertificateModal = (props: Props) => {
                             placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}
                         />
                     }
+                        <RenderElement show={!!errorText}>
+                            <Stack sx={{ width: '100%', marginTop: '1rem' }} spacing={2}>
+                                <Alert severity="error">{errorText}</Alert>
+                            </Stack>
+                        </RenderElement>
                     </Grid>
                 </>
               </Grid>

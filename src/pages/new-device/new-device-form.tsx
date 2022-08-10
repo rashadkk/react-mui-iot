@@ -1,11 +1,12 @@
 import { Form, useForm } from '../../components/useForm';
 import Controls from '../../components/controls/Controls'
-import { Button, Grid, Typography } from '@mui/material';
+import { Alert, Button, Grid, Stack, Typography } from '@mui/material';
 import deviceService from '../../services/device.service';
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { cloudLoggingOptions, publicKeyFormat } from '../../global/constants';
+import registryService from '../../services/registry.service';
 
 interface Props {
 	region: string | undefined | null,
@@ -18,7 +19,12 @@ function NewDeviceForm(props: Props) {
 
     const { region, registry, editMode, deviceId } = props;
 
+    // const [registryDetails, setRegistryDetails] = useState<any>({});
     // const [deviceDetails, setDeviceDetails] = useState<any>({});
+    const [keyFormats, setKeyFormats] = useState(publicKeyFormat)
+    const [hasCACerificate, setHasCACerificate] = useState(false);
+    const [errorText, setErrorText] = useState('');
+
 
     const validate = (fieldValues = values) => {
         let temp = { ...errors }
@@ -34,14 +40,14 @@ function NewDeviceForm(props: Props) {
 		//     ...temp
 		// })
 
-		if (fieldValues == values)
-			return Object.values(temp).every(x => x == "")
+		if (fieldValues === values)
+			return Object.values(temp).every(x => x === "")
     }
 
     const {
         values,
         errors,
-        setErrors,
+        // setErrors,
         setValues,
         handleInputChange,
         // resetForm
@@ -51,13 +57,16 @@ function NewDeviceForm(props: Props) {
 
     const createDevice = async (params: any) => {
         try {
+            setErrorText('');
             if(registry && region) {
                 await deviceService.createDevice(registry, region, params)
-                navigate(`/registries/${registry}/devices?region=${region}`)
+                navigate(`/registries/${registry}/devices/${params?.id}/overview?region=${region}`)
             }
-        } catch (error) {
+        } catch (error: any) {
             console.log('Device create error', error);
-            
+            if(error?.response?.data?.message){
+                setErrorText(error?.response?.data?.message);
+            }
         }
     }
 
@@ -69,6 +78,21 @@ function NewDeviceForm(props: Props) {
             }
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    const getRegistry = async () => {
+        try {
+            if(registry && region) {
+                const resp = await registryService.getRegistry(registry, region);
+                const registryDetails = resp.data?.details;
+                const certs = registryDetails?.credentials?.filter((cert: any) => !!cert?.publicKeyCertificate?.certificate)
+                registryDetails.certs = certs;
+                // setRegistryDetails(registryDetails);
+                setHasCACerificate(certs.length > 0);
+            }
+        } catch (error) {
+            console.log(error)
         }
     }
 
@@ -97,11 +121,20 @@ function NewDeviceForm(props: Props) {
                 deviceCommunication: 'ALLOW',
                 logLevel: 'DISABLED',
                 inputMethod: 'MANUAL',
-                publicKeyFormat: 'RSA_X509_PEM'
+                publicKeyFormat: 'RSA_PEM'
             }
             setValues(initialFormValues)
         }
+        getRegistry();
     }, [])
+
+    useEffect(() => {
+        const keyFormatsUpdated = keyFormats?.map(item => 
+            (hasCACerificate && ['RSA_PEM', 'ES256_PEM'].includes(item?.id)) ? {...item, disabled: true} : item  
+        )
+        setKeyFormats(keyFormatsUpdated)
+        if(hasCACerificate) setValues((prev: any) => ({...prev, publicKeyFormat: 'RSA_X509_PEM' }))
+    }, [hasCACerificate])
 
     const navigate = useNavigate();
 
@@ -118,7 +151,7 @@ function NewDeviceForm(props: Props) {
                 credentials: cred,
                 blocked: values?.deviceCommunication !== 'ALLOW',
                 metadata:{},
-                loglevel:values?.logLevel
+                logLevel:values?.logLevel
             }
             if(values?.certValue) {
                 params.credentials.push({
@@ -190,7 +223,7 @@ function NewDeviceForm(props: Props) {
                             />
                             <Controls.Select
                                     name="publicKeyFormat"
-                                    options={publicKeyFormat}
+                                    options={keyFormats}
                                     value={values?.publicKeyFormat || ''}
                                     label="Public key format"
                                     onChange={handleInputChange}
@@ -209,6 +242,13 @@ function NewDeviceForm(props: Props) {
                                         className="mt-4"
                                         placeholder={`-----BEGIN CERTIFICATE-----\n(Certificate value must be in PEM format)\n-----END CERTIFICATE-----`}
                                     />
+                                }
+                                {
+                                    errorText && (
+                                        <Stack sx={{ width: '100%', marginTop: '1rem' }} spacing={2}>
+                                            <Alert severity="error">{errorText}</Alert>
+                                        </Stack>
+                                    )
                                 }
                             </Grid>
                         </>

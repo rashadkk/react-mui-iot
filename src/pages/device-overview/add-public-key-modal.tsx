@@ -74,8 +74,7 @@ export default function AddPublicKeyModal(props: Props) {
             }
             setLoading(true);
             setErrorText('');
-            const resp = await deviceService.addPublicKey(deviceId, registryId, region, certObject);
-            console.log('certificate registry', resp.data);
+            await deviceService.addPublicKey(deviceId, registryId, region, certObject);
             
             onAddComplete();
             setLoading(false);

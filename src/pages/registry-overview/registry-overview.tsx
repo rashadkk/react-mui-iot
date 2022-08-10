@@ -1,28 +1,25 @@
-import { Box, Button, Divider, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography } from "@mui/material";
+import { Box, Button, Divider, Grid, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography } from "@mui/material";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Sidebar from '../../components/sidebar/sidebar';
 import { Edit, Delete } from "@mui/icons-material";
 import registryService from "../../services/registry.service";
 import { useEffect, useState } from "react";
-import ConfirmBox from "../../components/confirm/confirm";
 import AddCaCertificateModal from "./add-ca-certificate-modal";
 import ConfirmBoxWithID from "../../components/ConfirmBoxWithID";
-
+import ConfirmBox from "../../components/confirm/confirm";
 
 const RegistryOverview = () => {
 
     const [registryDetails, setRegistryDetails] = useState<any>({});
     const [deletePopupOpen, setDeletePopupOpen] = useState(false)
-    const [addCertPopup, setAddCertPopup] = useState(false)
+    const [addCertPopup, setAddCertPopup] = useState(false);
+
+    const [selectedCert, setSelectedCert] = useState(null);
 
     const routerParams = useParams();
     const [queryParams] = useSearchParams();
     const navigate = useNavigate();
     
-    console.log(routerParams)
-    console.log('serach params', queryParams);
-    
-
     const { registryId } = routerParams;
     const region = queryParams.get('region');
 
@@ -62,6 +59,7 @@ const RegistryOverview = () => {
                     credentials: certObject
                 }
                 await registryService.deleteCACertificate(region, registryId, data);
+                setSelectedCert(null);
                 getRegistry();
                 
             }
@@ -69,9 +67,9 @@ const RegistryOverview = () => {
             console.log('Error', error);
         }
     }
+
+
     
-
-
   return (
     <Box sx={{ padding: 0, display: 'flex' }}>
         <Sidebar registry={registryId} region={region} />
@@ -174,14 +172,14 @@ const RegistryOverview = () => {
                     <TableContainer >
                         <Table sx={{ minWidth: 650, tableLayout: 'fixed' }} size="small" aria-label="a dense table">
                             <TableHead sx={{ backgroundColor: '#fafafa' }}>
-                            <TableRow>
-                                <TableCell width="20%">Certificate value</TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
+                                <TableRow>
+                                    <TableCell width="20%">Certificate value</TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
                             </TableHead>
                             <TableBody>
                                 {
-                                ( registryDetails?.certs?.length === 0) &&
+                                ( !registryDetails?.certs || registryDetails?.certs?.length === 0) &&
                                 <TableRow>
                                         <TableCell colSpan={2}>
                                             No certificates added to the registry.
@@ -196,7 +194,7 @@ const RegistryOverview = () => {
                                             {row?.publicKeyCertificate?.certificate?.replace('-----BEGIN CERTIFICATE-----', '')}
                                         </TableCell>
                                         <TableCell align="right">
-                                            <IconButton onClick={() => deleteCACert(row)}>
+                                            <IconButton onClick={() => setSelectedCert(row)}>
                                                 <Delete color="disabled" fontSize="small" />
                                             </IconButton>
                                         </TableCell>
@@ -204,7 +202,10 @@ const RegistryOverview = () => {
                                 ))}
                             </TableBody>
                         </Table>
-            </TableContainer>
+                    </TableContainer>
+
+
+
                 </Box>
 
             </Box>
@@ -219,12 +220,6 @@ const RegistryOverview = () => {
                 setAddCertPopup(false);
             }}
         />
-        {/* <ConfirmBox
-            title="Delete Registry"
-            open={deletePopupOpen}
-            handleClose={()=> setDeletePopupOpen(false)}
-            handleOk={deleteRegistry}
-        /> */}
         <ConfirmBoxWithID
             title="Delete Registry"
             contentText="Deleting a registry will permanently remove the registry from your project."
@@ -234,6 +229,15 @@ const RegistryOverview = () => {
             confirmText={registryId}
             okText="Delete"
             cancelText="Cancel"
+        />
+          <ConfirmBox
+            title="Delete certificate ?"
+            contentText="Certificates you delete will no longer be used to authenticate devices in this registry. You won't be able to undo this action."
+            cancelText="Cancel"
+            okText="Delete"
+            open={!!selectedCert}
+            handleClose={()=> setSelectedCert(null)}
+            handleOk={()=> deleteCACert(selectedCert)}
         />
     </Box>
   )

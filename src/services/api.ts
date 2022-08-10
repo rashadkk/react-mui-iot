@@ -35,7 +35,7 @@ class API {
   }
 
   patch(url: string, data: any) {
-    return axios.patch(url);
+    return axios.patch(url, data);
   }
 
   delete(url: string, data?: any) {

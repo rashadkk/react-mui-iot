@@ -1,10 +1,12 @@
+import { useEffect, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Box, Button, Link, Divider, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography } from '@mui/material'
-import RoutePaths from '../../routes/route';
+import { Box, Button, Link, Divider,Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Toolbar, Typography } from '@mui/material'
+import { AddBox } from '@mui/icons-material';
+
+// import RoutePaths from '../../routes/route';
 // import Button from "../../components/controls/Button"
 import Sidebar from '../../components/sidebar/sidebar'
-import { AddBox } from '@mui/icons-material';
-import { useEffect, useState } from 'react';
+import TableRowEmptyState from '../../components/TableRowEmptyState';
 import deviceService from '../../services/device.service';
 
 const Devices = () => {
@@ -16,7 +18,7 @@ const Devices = () => {
     const { registryId } = routerParams;
     const region = queryParams.get('region');
 
-    const [devices, setDevices] = useState([])
+    const [devices, setDevices] = useState([]);
 
     const getDevices = async () => {
         try {
@@ -65,10 +67,14 @@ const Devices = () => {
                 </TableRow>
                 </TableHead>
                 <TableBody>
+                    <TableRowEmptyState 
+                        show={devices.length === 0}
+                        message="No devices to display in this registry"
+                        colSpan={4}
+                    />
                 {devices.map((row: any) => (
                     <TableRow
-                    key={row?.id}
-                    // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                        key={row?.id}
                     >
                         <TableCell component="th" scope="row">
                             <Link underline="hover" color="inherit" component={RouterLink} to={`${row?.id}/overview?region=${region}`}>

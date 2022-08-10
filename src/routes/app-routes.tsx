@@ -1,4 +1,4 @@
-import {  Routes, Route, Navigate } from 'react-router-dom';
+import {  Routes, Route } from 'react-router-dom';
 
 import RegistryLayout from '../pages/registries/registry-layout';
 import Registries from '../pages/registries/registries';
@@ -22,6 +22,8 @@ import DeviceOverview from '../pages/device-overview/device-overview';
 const AppRoutes = () => {
   
   const { initialized } = useKeycloak();
+
+  console.log('initialization status', initialized);
 
   if(!initialized) {
     return (

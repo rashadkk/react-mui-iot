@@ -10,7 +10,8 @@ import Header from '../components/header/header';
 import AppRoutes from '../routes/app-routes';
 import styles from './App.module.scss';
 
-const BASE_URL = 'http://localhost:3000'
+const BASE_URL = process.env.REACT_APP_APP_URL;
+
 function App() {
   return (
     <ReactKeycloakProvider authClient={keycloak} initOptions={{ silentCheckSsoRedirectUri: `${BASE_URL}/silent-check-sso.html` }}>

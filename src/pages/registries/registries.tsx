@@ -7,6 +7,7 @@ import registryService from '../../services/registry.service';
 
 import { AddBox } from '@mui/icons-material';
 import CheckBoxPopup from '../../components/CheckBoxPopup';
+import TableRowEmptyState from '../../components/TableRowEmptyState';
 
 
 const Registries = () => {
@@ -50,6 +51,11 @@ const Registries = () => {
             </TableRow>
             </TableHead>
             <TableBody>
+            <TableRowEmptyState 
+                show={registries.length === 0}
+                message="No registries"
+                colSpan={4}
+            />
             {registries.map((row: any) => (
                 <TableRow
                     key={row?.id}
