@@ -1,9 +1,7 @@
-// import './App.scss';
-
 import { BrowserRouter } from 'react-router-dom';
 
-import { ReactKeycloakProvider } from "@react-keycloak/web";
-import { keycloak } from "../services/keyclock.service"
+// import { ReactKeycloakProvider } from "@react-keycloak/web";
+// import { keycloak } from "../services/keyclock.service"
 
 import Header from '../components/header/header';
 
@@ -14,16 +12,16 @@ const BASE_URL = process.env.REACT_APP_APP_URL;
 
 function App() {
   return (
-    <ReactKeycloakProvider authClient={keycloak} initOptions={{ silentCheckSsoRedirectUri: `${BASE_URL}/silent-check-sso.html` }}>
+    // <ReactKeycloakProvider authClient={keycloak} initOptions={{ silentCheckSsoRedirectUri: `${BASE_URL}/silent-check-sso.html` }}>
       <BrowserRouter> 
         <div id={styles.AppContainer}>
           <Header />
-          <main className=''>
+          <main id={styles.MainContainer}>
             <AppRoutes />
           </main>
         </div>
       </BrowserRouter>
-    </ReactKeycloakProvider>
+    // </ReactKeycloakProvider>
   );
 }
 

@@ -1,0 +1,40 @@
+$white: #fff;
+$google-blue: #4285f4;
+$button-active-blue: #1669F2;
+
+.google-btn {
+//   width: 184px;
+//   height: 38px;
+  background-color: $google-blue !important;
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 3px 4px 0 rgba(0,0,0,.25);
+  .google-icon-wrapper {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    bottom: 1px;
+    width: 40px;
+    border-radius: 2px;
+    background-color: $white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .google-icon {
+    width: 18px;
+    height: 18px;
+  }
+  .btn-text {
+    color: $white;
+    text-transform: none;
+    margin-left: 1rem;
+  }
+  &:hover {
+    box-shadow: 0 0 6px $google-blue;
+  }
+  &:active {
+    background: $button-active-blue;
+  }
+}

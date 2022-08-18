@@ -10,22 +10,23 @@ import Devices from '../pages/devices/devices';
 import NewDevice from '../pages/new-device/new-device';
 import DevicesLayout from '../pages/devices/devices-layout';
 import HomePage from '../pages/home/home';
+import { Login } from '../pages'
 import PrivateRoute from '../components/PrivateRoute';
 import PublicRoute from '../components/PublicRoute';
-
-
-import { useKeycloak } from '@react-keycloak/web'
+// import { useKeycloak } from '@react-keycloak/web'
 import { Box, CircularProgress } from '@mui/material';
 import DeviceOverview from '../pages/device-overview/device-overview';
 
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../config/firebase';
 
 const AppRoutes = () => {
   
-  const { initialized } = useKeycloak();
+  // const { initialized } = useKeycloak();
 
-  console.log('initialization status', initialized);
+  const [user, loading] = useAuthState(auth);
 
-  if(!initialized) {
+  if(loading) {
     return (
       <Box sx={{ color: 'grey.500', display: 'flex', height: 'calc(100vh - 64px)' }}  >
         <CircularProgress color="primary" sx={{ margin: 'auto' }} />
@@ -37,6 +38,7 @@ const AppRoutes = () => {
     <Routes>
         {/* <Route path="/" element={<HomePage />} /> */}
         <Route path="/" element={<PublicRoute><HomePage /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path={RoutePaths.registries} element={ <PrivateRoute><RegistryLayout /></PrivateRoute>}>
             <Route index element={<Registries /> } />
             <Route path={RoutePaths.new_registry} element={<NewRegistry />} />

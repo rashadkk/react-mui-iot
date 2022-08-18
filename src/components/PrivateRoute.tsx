@@ -1,16 +1,19 @@
-import { useKeycloak } from "@react-keycloak/web";
+// import { useKeycloak } from "@react-keycloak/web";
 import { Navigate } from 'react-router-dom';
-// import { useSearchParams, useLocation } from 'react-router-dom';
+
+import { auth } from '../config/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 const PrivateRoute = (props: any) => {
-    const { keycloak } = useKeycloak();
-    // const locations = useLocation();
-    // const target = locations.pathname
+    // const { keycloak } = useKeycloak();
+
+    const [user] = useAuthState(auth);
+
     const {children } = props;
 
-    const isLoggedIn = keycloak.authenticated;
+    const isLoggedIn = !!user;
 
-    console.log('isLoggedIn-----', );
+    console.log('isLoggedIn-----', isLoggedIn);
     
     // const url = target ? target : '/'
     return isLoggedIn ? children : (<Navigate to={`/`} />);
